@@ -47,11 +47,29 @@ public class Customer {
     @Builder
     public Customer(CustomerType customerType, String fullName,
                     String email, String document) {
+        if (customerType == null) { throw  new IllegalArgumentException("Customer type cannot be null"); }
+        if (fullName == null || fullName.isBlank()) { throw  new IllegalArgumentException("Full name cannot be null"); }
+        if (email == null || email.isBlank()) { throw  new IllegalArgumentException("Email cannot be null"); }
+        if (document == null || document.isBlank()) { throw  new IllegalArgumentException("Document cannot be null"); }
+
         this.customerType = customerType;
         this.fullName = fullName;
         this.email = email;
         this.document = document;
         this.status = CustomerStatus.ACTIVE;
+    }
+
+    public void rename(String newName) {
+        if  (newName == null || newName.isBlank()) { throw  new IllegalArgumentException("New name cannot be null"); }
+        this.fullName = newName;
+    }
+
+    public void changeEmail(String newEmail) {
+        if (newEmail == null || newEmail.isBlank()) {
+            throw new IllegalArgumentException("Email cannot be null or blank");
+        }
+
+        this.email = newEmail;
     }
 
     public void changeStatus(CustomerStatus newStatus) {
