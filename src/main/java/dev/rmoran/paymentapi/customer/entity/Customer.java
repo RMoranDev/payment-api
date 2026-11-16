@@ -22,11 +22,9 @@ public class Customer {
     private CustomerType customerType;
 
     @Column(name = "full_name", nullable = false, length = 150)
-    @Setter
     private String fullName;
 
     @Column(name = "email", nullable = false, unique = true, length = 150)
-    @Setter
     private String email;
 
     @Column(name = "document", nullable = false, updatable = false, unique = true, length = 14)
