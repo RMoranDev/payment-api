@@ -6,6 +6,7 @@ import dev.rmoran.paymentapi.customer.dto.response.CustomerResponse;
 import dev.rmoran.paymentapi.customer.entity.Customer;
 import dev.rmoran.paymentapi.customer.entity.CustomerType;
 import dev.rmoran.paymentapi.customer.repository.CustomerRepository;
+import dev.rmoran.paymentapi.shared.exception.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -13,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Locale;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -24,7 +24,7 @@ public class CustomerService {
     @Transactional(readOnly = true)
     public CustomerResponse findById(UUID id) {
         Customer foundCustomer = customerRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found"));
+                .orElseThrow(() -> new CustomerNotFoundException(id));
 
         return toResponse(foundCustomer);
     }
@@ -35,10 +35,10 @@ public class CustomerService {
         String document = normalizeDocument(request.document());
 
         if (customerRepository.existsByEmail(email)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
+            throw new EmailAlreadyExistsException(email);
         }
         if (customerRepository.existsByDocument(document)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Document already exists");
+            throw new DocumentAlreadyExistsException(document);
         }
 
         Customer customer = Customer.builder()
@@ -56,14 +56,11 @@ public class CustomerService {
     @Transactional
     public CustomerResponse updateCustomer(UUID id, UpdateCustomerRequest request) {
         if (request.fullName() == null && request.email() == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "At least one field must be provided"
-            );
+            throw new EmptyUpdateRequestException();
         }
 
         Customer existingCustomer = customerRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found"));
+                .orElseThrow(() -> new CustomerNotFoundException(id));
 
         if (request.fullName() != null) {
             existingCustomer.rename(request.fullName().trim());
@@ -73,7 +70,7 @@ public class CustomerService {
             String email = normalizeEmail(request.email());
 
             if (customerRepository.existsByEmailAndIdNot(email, id)) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
+                throw new EmailAlreadyExistsException(email);
             }
             existingCustomer.changeEmail(email);
         }
@@ -108,7 +105,7 @@ public class CustomerService {
         } else if (document.length() == 11) {
             return CustomerType.INDIVIDUAL;
         } else {
-            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_CONTENT, "Document must have 11 digits (CPF) or 14 digits (CNPJ)");
+            throw new InvalidDocumentException("Document must have 11 digits (CPF) or 14 digits (CNPJ)");
         }
     }
 }
