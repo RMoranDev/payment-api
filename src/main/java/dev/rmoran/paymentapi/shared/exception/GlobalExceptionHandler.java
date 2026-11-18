@@ -15,4 +15,10 @@ public class GlobalExceptionHandler {
     public ErrorResponse handleCustomerNotFound(CustomerNotFoundException ex) {
         return new ErrorResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage(), Instant.now());
     }
+
+    @ExceptionHandler(EmptyUpdateRequestException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleEmptyUpdateRequestException(EmptyUpdateRequestException ex) {
+        return new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), Instant.now());
+    }
 }
