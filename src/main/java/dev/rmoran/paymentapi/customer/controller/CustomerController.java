@@ -4,6 +4,7 @@ import dev.rmoran.paymentapi.customer.dto.request.CreateCustomerRequest;
 import dev.rmoran.paymentapi.customer.dto.request.UpdateCustomerRequest;
 import dev.rmoran.paymentapi.customer.dto.response.CustomerResponse;
 import dev.rmoran.paymentapi.customer.service.CustomerService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -24,12 +25,12 @@ public class CustomerController {
     }
 
     @PostMapping
-    public CustomerResponse createCustomer(@RequestBody CreateCustomerRequest request) {
+    public CustomerResponse createCustomer(@Valid @RequestBody CreateCustomerRequest request) {
         return customerService.createCustomer(request);
     }
 
     @PatchMapping("/{id}")
-    public CustomerResponse updateCustomer(@PathVariable UUID id, @RequestBody UpdateCustomerRequest request) {
+    public CustomerResponse updateCustomer(@PathVariable UUID id, @Valid @RequestBody UpdateCustomerRequest request) {
         return customerService.updateCustomer(id, request);
     }
 }
