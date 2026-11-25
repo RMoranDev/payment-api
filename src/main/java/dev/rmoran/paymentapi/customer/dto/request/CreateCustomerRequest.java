@@ -1,6 +1,5 @@
 package dev.rmoran.paymentapi.customer.dto.request;
 
-import dev.rmoran.paymentapi.customer.entity.CustomerType;
 import jakarta.validation.constraints.*;
 
 public record CreateCustomerRequest(

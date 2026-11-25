@@ -93,4 +93,8 @@ public class Customer {
     public int hashCode() {
         return getClass().hashCode();
     }
+
+    public boolean isActive() {
+        return this.status == CustomerStatus.ACTIVE;
+    }
 }
