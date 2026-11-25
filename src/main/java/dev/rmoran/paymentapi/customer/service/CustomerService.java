@@ -24,7 +24,7 @@ public class CustomerService {
         Customer foundCustomer = customerRepository.findById(id)
                 .orElseThrow(() -> new CustomerNotFoundException(id));
 
-        return toResponse(foundCustomer);
+        return CustomerResponse.from(foundCustomer);
     }
 
     @Transactional
@@ -46,9 +46,9 @@ public class CustomerService {
                 .document(document)
                 .build();
 
-        Customer savedCustomer = customerRepository.save(customer);
+        Customer createdCustomer = customerRepository.save(customer);
 
-        return toResponse(savedCustomer);
+        return CustomerResponse.from(createdCustomer);
     }
 
     @Transactional
@@ -73,21 +73,9 @@ public class CustomerService {
             existingCustomer.changeEmail(email);
         }
 
-        return toResponse(existingCustomer);
+        return CustomerResponse.from(existingCustomer);
     }
 
-    private CustomerResponse toResponse(Customer customer) {
-        return new CustomerResponse(
-                customer.getId(),
-                customer.getCustomerType(),
-                customer.getFullName(),
-                customer.getEmail(),
-                customer.getDocument(),
-                customer.getStatus(),
-                customer.getCreatedAt(),
-                customer.getUpdatedAt()
-        );
-    }
 
     private String normalizeEmail(String email) {
         return email.trim().toLowerCase(Locale.ROOT);
