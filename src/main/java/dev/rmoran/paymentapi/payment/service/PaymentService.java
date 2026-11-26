@@ -1,6 +1,5 @@
 package dev.rmoran.paymentapi.payment.service;
 
-import dev.rmoran.paymentapi.customer.dto.response.CustomerResponse;
 import dev.rmoran.paymentapi.customer.entity.Customer;
 import dev.rmoran.paymentapi.customer.repository.CustomerRepository;
 import dev.rmoran.paymentapi.payment.dto.request.CreatePaymentRequest;
@@ -13,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
