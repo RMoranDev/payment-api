@@ -1,103 +1,109 @@
-# Payment API
+# Payments API
 
-API REST em Java para cadastro de clientes e gestão do ciclo de vida de pagamentos. O projeto está em desenvolvimento e serve como uma base de estudo e evolução prática de uma aplicação backend orientada a domínio.
+A REST API built with Java for customer registration and payment lifecycle management. The project is under active development and serves as a practical, domain-oriented backend learning project.
 
-## Estágio atual
+## Current Stage
 
-O núcleo da aplicação e sua persistência já estão implementados. Neste momento, a API disponibiliza o fluxo de clientes e possui o domínio necessário para criar pagamentos; a camada HTTP de pagamentos e a cobertura de testes ainda são as próximas entregas.
+The application core and persistence layer are implemented. The customer flow and the first version of the payment creation flow are available through the API. Automated test coverage for payment business rules is the next delivery.
 
-### Implementado
+### Implemented
 
-- Cadastro, consulta por ID e atualização parcial de clientes.
-- Clientes pessoa física (`INDIVIDUAL`/CPF) e jurídica (`BUSINESS`/CNPJ).
-- Normalização de e-mail e documento, além de proteção contra e-mail e documento duplicados.
-- Entidades JPA, repositórios Spring Data e regras de domínio para clientes e pagamentos.
-- Criação de pagamentos para clientes ativos, inicialmente no estado `PENDING`.
-- Transições de domínio de pagamento: aprovação, rejeição e cancelamento.
-- Persistência PostgreSQL versionada pelo Flyway, com restrições, chaves e índices.
-- Tratamento global inicial para cliente não encontrado e requisição de atualização vazia.
-- Teste de carregamento do contexto com PostgreSQL via Testcontainers.
+- Customer registration, lookup by ID, and partial updates.
+- Individual (`INDIVIDUAL`/CPF) and business (`BUSINESS`/CNPJ) customers.
+- Email and document normalization, with duplicate-email and duplicate-document protection.
+- JPA entities, Spring Data repositories, and domain rules for customers and payments.
+- Payment creation through `POST /api/v1/payments`.
+- Request handling through `CreatePaymentRequest`, with Bean Validation.
+- Customer existence and `ACTIVE` status validation before payment creation.
+- New payments created with the initial `PENDING` status and persisted through `PaymentRepository`.
+- Payment entity conversion to `PaymentResponse`.
+- Payment domain transitions: approval, rejection, and cancellation.
+- PostgreSQL persistence versioned with Flyway, including constraints, keys, and indexes.
+- Initial global handling for customer-not-found and empty-update-request errors.
+- Context-loading test with PostgreSQL through Testcontainers.
 
-### Ainda não exposto pela API
+### Not Yet Exposed by the API
 
-- Endpoints HTTP para criar, consultar e alterar o estado de pagamentos.
-- Alteração de status de cliente.
-- Catálogo/listagem com paginação e filtros.
-- Documentação OpenAPI/Swagger, autenticação/autorização e implantação conteinerizada.
+- Payment lookup and payment status-transition endpoints.
+- Customer status updates.
+- Listing with pagination and filters.
+- OpenAPI/Swagger documentation, authentication/authorization, and containerized deployment.
 
-## Tecnologias
+## Technologies
 
 - Java 21
 - Spring Boot 4
-- Spring Web MVC, Spring Data JPA e Bean Validation
-- PostgreSQL e Flyway
-- Maven e Lombok
-- JUnit 5 e Testcontainers
-- Spring Boot Actuator (dependência já adicionada)
+- Spring Web MVC, Spring Data JPA, and Bean Validation
+- PostgreSQL and Flyway
+- Maven and Lombok
+- JUnit 6 and Mockito (planned for payment service tests)
+- Testcontainers
+- Spring Boot Actuator (dependency already added)
 
-## Arquitetura
+## Architecture
 
-O código é organizado por domínio. Cada módulo reúne seus contratos, regras e acesso a dados, enquanto preocupações transversais ficam em `shared`.
+The code is organized by domain. Each module groups its contracts, business rules, and data access, while cross-cutting concerns remain in `shared`.
 
 ```text
 src/main/java/dev/rmoran/paymentapi
-├── customer/       # API, DTOs, entidade, serviço e repositório de clientes
-├── payment/        # DTOs, entidade, serviço e repositório de pagamentos
-└── shared/          # tratamento de erros e componentes compartilhados
+├── customer/       # customer API, DTOs, entity, service, and repository
+├── payment/        # payment API, DTOs, entity, service, and repository
+└── shared/          # error handling and shared components
 
 src/main/resources
 ├── application.yaml
-└── db/migration/    # migrações Flyway
+└── db/migration/    # Flyway migrations
 ```
 
-## Modelo de domínio
+## Domain Model
 
-Um cliente possui CPF ou CNPJ, e-mail único e status `ACTIVE` ou `INACTIVE`. Um pagamento pertence a um cliente e registra valor, moeda, descrição, método e estado.
+A customer has a CPF or CNPJ, a unique email address, and an `ACTIVE` or `INACTIVE` status. A payment belongs to a customer and records its amount, currency, description, method, and status.
 
-| Campo | Valores atuais |
+| Field | Current values |
 | --- | --- |
-| Tipo de cliente | `INDIVIDUAL`, `BUSINESS` |
-| Status do cliente | `ACTIVE`, `INACTIVE` |
-| Método de pagamento | `PIX`, `CREDIT_CARD`, `DEBIT_CARD` |
-| Status do pagamento | `PENDING`, `APPROVED`, `REJECTED`, `CANCELLED` |
-| Moeda persistida | `BRL` |
+| Customer type | `INDIVIDUAL`, `BUSINESS` |
+| Customer status | `ACTIVE`, `INACTIVE` |
+| Payment method | `PIX`, `CREDIT_CARD`, `DEBIT_CARD` |
+| Payment status | `PENDING`, `APPROVED`, `REJECTED`, `CANCELLED` |
+| Stored currency | `BRL` |
 
-## Pré-requisitos
+## Prerequisites
 
 - JDK 21
-- PostgreSQL em execução, com um banco chamado `payments_db`
-- Docker, caso execute os testes de integração com Testcontainers
+- PostgreSQL running, with a database named `payments_db`
+- Docker, if you run integration tests with Testcontainers
 
-## Como executar localmente
+## Run Locally
 
-Crie o banco e informe as credenciais por variáveis de ambiente. No PowerShell:
+Create the database and provide the credentials through environment variables. In PowerShell:
 
 ```powershell
 $env:DB_USERNAME = "postgres"
-$env:DB_PASSWORD = "sua-senha"
+$env:DB_PASSWORD = "your-password"
 ```
 
-Em seguida, na raiz do projeto:
+Then, from the project root:
 
 ```powershell
 .\mvnw.cmd spring-boot:run
 ```
 
-A aplicação inicia em `http://localhost:8080`. Ao iniciar, o Flyway aplica a migração disponível em `src/main/resources/db/migration` e o Hibernate valida o esquema.
+The application starts at `http://localhost:8080`. On startup, Flyway applies the migrations in `src/main/resources/db/migration` and Hibernate validates the schema.
 
-Em ambientes Unix, use `./mvnw spring-boot:run`.
+On Unix environments, use `./mvnw spring-boot:run`.
 
-## Endpoints disponíveis
+## Available Endpoints
 
 Base URL: `http://localhost:8080/api/v1`
 
-| Método | Rota | Descrição |
+| Method | Route | Description |
 | --- | --- | --- |
-| `POST` | `/customers` | Cria um cliente. |
-| `GET` | `/customers/{id}` | Consulta um cliente pelo UUID. |
-| `PATCH` | `/customers/{id}` | Atualiza nome e/ou e-mail de um cliente. |
+| `POST` | `/customers` | Creates a customer. |
+| `GET` | `/customers/{id}` | Retrieves a customer by UUID. |
+| `PATCH` | `/customers/{id}` | Updates a customer name and/or email. |
+| `POST` | `/payments` | Creates a payment for an active customer. |
 
-### Criar cliente
+### Create a Customer
 
 ```http
 POST /api/v1/customers
@@ -110,9 +116,9 @@ Content-Type: application/json
 }
 ```
 
-Para pessoa jurídica, informe um CNPJ com 14 dígitos no campo `document`.
+For a business customer, provide a 14-digit CNPJ in the `document` field.
 
-### Atualizar cliente
+### Update a Customer
 
 ```http
 PATCH /api/v1/customers/{id}
@@ -123,22 +129,39 @@ Content-Type: application/json
 }
 ```
 
-## Testes
+### Create a Payment
+
+```http
+POST /api/v1/payments
+Content-Type: application/json
+
+{
+  "customerId": "550e8400-e29b-41d4-a716-446655440000",
+  "amount": 150.00,
+  "currency": "BRL",
+  "description": "Order payment",
+  "paymentMethod": "PIX"
+}
+```
+
+New payments are created with the `PENDING` status. The endpoint validates the request and verifies that the customer exists and is `ACTIVE`.
+
+## Testing
 
 ```powershell
 .\mvnw.cmd test
 ```
 
-O teste de contexto usa Testcontainers para iniciar um PostgreSQL. Portanto, o Docker deve estar disponível na máquina antes da execução.
+The context test uses Testcontainers to start PostgreSQL. Docker must therefore be available before running it.
 
-## Próximas fases
+## Next Steps
 
-1. **Concluir a API de pagamentos** — expor criação, consulta e transições de estado com regras consistentes de resposta e auditoria.
-2. **Fortalecer os contratos HTTP** — ativar validação dos corpos de requisição, padronizar respostas de erro e códigos HTTP, e documentar a API com OpenAPI.
-3. **Completar operações de clientes** — disponibilizar mudança de status, listagem, paginação e filtros.
-4. **Aumentar a qualidade** — adicionar testes unitários de serviços e entidades, testes de integração dos endpoints e cenários de erro/concorrência.
-5. **Preparar para produção** — configurar autenticação e autorização, métricas/health checks, logs estruturados, Docker/Compose, CI e estratégia de configuração por ambiente.
+1. **Add automated tests for `PaymentService`** — use JUnit 6 and Mockito to cover successful and failing payment-creation scenarios.
+2. **Complete the payment API** — expose payment lookup and status transitions with consistent responses and auditing rules.
+3. **Strengthen HTTP contracts** — standardize error responses and HTTP status codes, and document the API with OpenAPI.
+4. **Complete customer operations** — provide status changes, listing, pagination, and filters.
+5. **Prepare for production** — configure authentication and authorization, metrics/health checks, structured logging, Docker/Compose, CI, and an environment-configuration strategy.
 
-## Autor
+## Author
 
 Ricardo Moran — [RMoranDev](https://github.com/RMoranDev)
